@@ -1,0 +1,1034 @@
+---
+title: "First iteration of Plastic ID on local Machine"
+author: "Christopher Carnivale"
+date: "`r Sys.time()`"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, }
+knitr::opts_chunk$set(warning = FALSE)
+source("Raman_functions.R")
+library(png)
+library(bmp)
+library(pixmap)
+library(baseline)
+library(hyperSpec)
+library(prospectr)
+library(ggplot2)
+library(magrittr)
+library(ggpubr)
+library(signal)
+library(OpenSpecy)
+library(tidyverse)
+```
+
+# Introduction
+
+The goal of this project is to not only enumerate total plastics but to also identify the and enumerate the plastic polymers polluting the Southern Ocean. This project's goal is to identify the 
+
+read in .txt files
+
+```{r 9/12/19 data}
+test2_10_8 <- read.delim(file = "ren4EB4_0__Time_0_test2_10_8.txt", header = F, sep = "\t")
+
+#format table
+
+colnames(test2_10_8) <-  c("Raman_shift", "Counts")
+test2_10_8 <- as.data.frame(test2_10_8)
+
+#repeat for each table
+test_control <-  read.delim("renB232_0__Time_0_test_control.txt", header = F, sep = "\t")
+colnames(test_control) <- c("Raman_shift", "Counts")
+test_control <- as.data.frame(test_control)
+
+pot_plastic <-  read.delim("ren79C7_0__Time_0_potentialPlastic_100ul.txt", header = F, sep = "\t")
+colnames(pot_plastic) <- c("Raman_shift", "Counts")
+pot_plastic <- as.data.frame(pot_plastic)
+
+pot_plastic1 <-  read.delim("ren76AF_0__Time_0_potPla1_100ul.txt", header = F, sep = "\t")
+colnames(pot_plastic1) <- c("Raman_shift", "Counts")
+pot_plastic1 <- as.data.frame(pot_plastic1)
+
+b <- list(test_control, pot_plastic,pot_plastic1, test2_10_8)
+head(b)
+
+```
+
+# Test plot section 2
+## with subsection
+Plot spectral analysis
+
+```{r 9/12/19 plots}
+
+library(ggpubr)
+
+test2plot <- ggplot(data = test2_10_8)+
+  geom_path(aes(x = Raman_shift, y = Counts))
+
+testcontrolplot <- ggplot(data = test_control)+
+  geom_path(aes(x = Raman_shift, y = Counts))
+
+potplastplot <- ggplot(data = pot_plastic)+
+  geom_path(aes(x = Raman_shift, y = Counts))
+
+pot1plastplot <- ggplot(data = pot_plastic1)+
+  geom_path(aes(x = Raman_shift, y = Counts))
+
+testcontrolplot
+
+test2plot
+ggarrange(test2plot, testcontrolplot, potplastplot, pot1plastplot)
+```
+
+```{r 9/18/19 data}
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/9_18_19_spectral_data/")
+
+#list.files()
+#plot for white filter control w/oil
+oil_control <- read.delim("renB531_control_w_oil_0__Time_0.txt", header = F, sep = "\t")
+colnames(oil_control) <- c("Raman_shift", "Counts")
+test_control <- as.data.frame(oil_control)
+
+oilcontrolplot <- ggplot(data = oil_control)+
+  geom_path(aes(x = Raman_shift, y = Counts))
+
+oilcontrolplot
+
+#plot of individual microspheres on white filter w/oil
+micro_indv <- read.delim("renD6C5_microsphere_ind_0__Time_0.txt", header = F, sep = "\t")
+colnames(micro_indv) <- c("Raman_shift", "Counts")
+micro_indv <- as.data.frame(micro_indv)
+micro_indv_plot <-  ggplot(micro_indv, aes(x = Raman_shift, y = Counts))+
+  geom_path()
+micro_indv_plot
+
+micro_indv1 <- read.delim("renC2B9_microsphere_ind1_0__Time_0.txt", header = F, sep = "\t")
+colnames(micro_indv1) <- c("Raman_shift", "Counts")
+micro_indv1 <- as.data.frame(micro_indv1)
+micro_indv1_plot <-  ggplot(micro_indv1, aes(x = Raman_shift, y = Counts))+
+  geom_path()
+micro_indv1_plot
+
+micro_indv2 <- read.delim("ren3CA9_microsphere_ind2_0__Time_0.txt", header = F, sep = "\t")
+colnames(micro_indv2) <- c("Raman_shift", "Counts")
+micro_indv2 <- as.data.frame(micro_indv2)
+
+micro_indv2_plot <-  ggplot(micro_indv2, aes(x = Raman_shift, y = Counts))+
+  geom_path()
+micro_indv2_plot
+
+#Now reading and plotting with single function using sourced function
+micro_indv3_plot <- Raman_plot_function("ren7832_microsphere_ind3_0__Time_0.txt")
+micro_indv3_plot
+
+micro_indv4_plot <- Raman_plot_function("ren3359_microsphere_spec_0__Time_0.txt")
+micro_indv4_plot
+
+#Black filter
+pot_plastic_st4 <-  Raman_plot_function("renE0D5a_st4_potplastic_0__Time_0.txt")
+pot_plastic_st4
+
+#White filter clusters of microspheres
+
+
+#Plot of all indv microsphere plots
+ggarrange(oilcontrolplot, micro_indv_plot, micro_indv2_plot, micro_indv3_plot)
+
+
+```
+
+```{r Black Filter plots}
+Boilcontrolplot <- Raman_plot_function("renED08Z_blackfilter_control_wOIL_0__Time_0.txt")
+Boilcontrolplot
+
+#Black filter plot
+ggarrange(Boilcontrolplot, pot_plastic_st4)
+```
+
+```{r loading white filter pics}
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/9_18_19_spectral_data/")
+
+micro_indv_pic <- readPNG("microsphere_w_scalebar_ind3.PNG")
+micro_indv_pic <- as.raster(micro_indv_pic)
+plot(micro_indv_pic)
+
+micro_indv1_pic <- read.bmp("microsphere1.bmp")
+micro_indv1_pic <- pixmapRGB(micro_indv1_pic)
+plot(micro_indv1_pic)
+```
+
+# Another Subsection
+
+```{r baseline correction test}
+
+#baselineGUI() need to install gWidgets to use this functionality
+
+str(milk)
+
+#View(milk$spectra[1,,drop = F])
+
+test_control_polymod <-  read.delim("renB232_0__Time_0_test_control.txt", header = F, sep = "\t")
+
+#head(test_control_polymod)
+
+test_control_polymod1 <- t(test_control_polymod)
+
+#View(test_control_polymod1)
+
+colnames(test_control_polymod1) <- test_control_polymod1[1,]
+test_control_polymod2 <- test_control_polymod1[-1,]
+
+#View(test_control_polymod2)
+
+test_control_polymod3 <- t(test_control_polymod2)
+
+#View(test_control_polymod3)
+
+test_control_polymod4 <- baseline.modpolyfit(test_control_polymod3, degree = 2)
+
+#View(test_control_polymod4)
+#View(test_control_polymod4$baseline)
+
+#View(test_control_polymod4$corrected)
+
+#the plotting works using the S4 type data brom the baseline function
+#however, that isn't easy to work with and hard to extract the corrected plot
+#I need to figure a way to plot the data to and extract the plot so as to
+#compare to the library data.
+
+data(milk)
+#The way the functions are used have changed and some arguments are no longer used.
+#ANY object using baseline() will be broken and I dont need to fix
+#bc.modpolyfit <- baseline.modpolyfit(milk$spectra[1,, drop=FALSE], method='modpolyfit', deg=3)
+
+#plot(bc.modpolyfit)
+
+##View(bc.modpolyfit@baseline)
+
+#test_control_polymod5 <- baseline(test_control_polymod1, method = 'modpolyfit', deg = 3)
+
+#plot(test_control_polymod5)
+
+#test_control_polymod6 <- baseline(test_control_polymod3, method = 'modpolyfit', deg = 6)
+
+#plot(test_control_polymod6)
+
+#plot(test_control_polymod6@spectra)
+
+#View(test_control_polymod6@spectra)
+
+#View(test_control_polymod6@corrected)
+
+#View(test_control_polymod6@baseline)
+
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/9_18_19_spectral_data/")
+
+#test_micro_indv_polymod_df <- Raman_df_function("ren3CA9_microsphere_ind2_0__Time_0.txt")
+
+#test_micro_indv_polymod_df_transpose <- t(test_micro_indv_polymod_df)
+
+#colnames(test_micro_indv_polymod_df) <- test_micro_indv_polymod_df[1,]
+#test
+
+#class(test_control_polymod6)
+
+#showMethods(class = "baseline")
+#method ? plot("baseline")
+
+
+#test_micro_indv_polymod_df
+#baseline can't be converted into data frame so can't use ggplot2
+
+#Three separate packages have baseline corrections using basically the same algorithm
+#prospectr::baselines(), Baseline::baseline.modpolyfit(), hyperSpec::spc.fit.poly()
+#prospectr is the only one that does it baseline correction differently and not the common way so I will not use that. The hyperSpec is made to be used with hyperspec obj so I will continue with that one. Currently the 
+```
+
+
+
+```{r 10/17/19 data plots}
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/10_17_19_spectral_data/")
+
+Bfilter_sample4_plot <- Raman_plot_function("ren68C2_Bfilter_sample4_fullrange_0__Time_0.txt")
+
+Bfilter_sample4_plot
+
+Bfilter_sample5_plot <- Raman_plot_function("ren41A6_Bfilter_sample5_fullrange_0__Time_0.txt")
+
+Bfilter_sample5_plot
+
+Bfilter_control_plot <- Raman_plot_function("renF6B0_Bfilter_rerun_control_0__Time_0.txt")
+
+Bfilter_control_plot
+
+```
+
+Baseline package is a bust and difficult to work with with no method for resolving baseline objects...seems like hyperspec has more flexibilty
+
+```{r 10/24/19 data}
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/10_24_19_spectral_data/")
+
+potP14plot <- Raman_plot_function("renEFCC_Bfilter_potP14_0__Time_0.txt")
+
+potP14plot
+
+```
+
+```{r baseline correction using Hyperspec}
+#baselines <- spc.fit.poly.below(test_control_polymod3)
+#need to convert to hyperspec object first
+
+plot(chondro)
+
+#convert to hyperspec object
+hyper_test <- as.hyperSpec(test_control_polymod3)
+
+plot(hyper_test)
+
+#Baselines
+baselines <-  spc.fit.poly.below(hyper_test, poly.order = 6)
+#Plotting baseline corrections
+plot(hyper_test-baselines)
+
+```
+
+#Notes on hyperspec objects and their structure.
+
+*S4 objects with an S3 data frame object within it.
+*Assumes that a data frame is providing "meta data"
+*matrix is assumed to be the spectral data
+
+For my larger data sets I need to form a list with extra data (environmental)
+and internal matrix with all of the spectra for a given sample. Ideally I would
+have all spectra for a sample within 1 matrix for identification purposes.
+
+I have created a basic hyperspec with 1 spectra above now...
+Can I apply baseline corrections into hyper_test data? From there I can do
+the standard normal variate correction and min-max standardization. Then I could
+finally take this data to compare to the library.
+
+```{r first spectral preprocessing}
+hyper_baseline_corr <- hyper_test-baselines
+
+plot(hyper_baseline_corr)
+
+#Now that I have baseline corrected data I can normalize and min max standardize
+
+hyper_baseline_corr@data[["spc"]] <- standardNormalVariate(hyper_baseline_corr@data[["spc"]])
+
+hyper_baseline_corr@data[["spc"]] <- (hyper_baseline_corr@data[["spc"]] - min(hyper_baseline_corr@data[["spc"]])) / (max(hyper_baseline_corr@data[["spc"]])-min(hyper_baseline_corr@data[["spc"]]))
+
+plot(hyper_baseline_corr)
+```
+
+In the previous chunk, I was able to baseline correct, standard variate 
+normalize and min-max scale the spectra to be able to compare to a library.
+Next step is to import the reference library to compare spectra.
+Then I can do correlations to determine the likely polymer type.
+
+I also need to alter the the original data set to be in the same matter as
+the reference library. The library is a 1 wavelength step the current data I 
+have approx to a 2 wavelength step between values. Need to use the approxfun()
+to interpolate on the frequency index they used to have the exact same number
+of values for the eventual correlation matrix. The frequency goes from 780 min
+to 1750 max by steps of 1. Need to subset my initial data according to this.
+
+```{r Plastic library import and plastic identification}
+ref_lib <- read.csv("/Users/christophercarnivale/Desktop/Dissertation_data/spectra_db.csv")
+
+str(ref_lib)
+
+plastic_ref_lib <- ref_lib %>% 
+  dplyr::filter(SOURCE == "plastic")
+
+#create aprrox wavelength from particle data to get the same number of data
+#points for a correlation analysis
+
+freq_index <- seq(780, 1750, by = 1)
+
+plastic_approx_fun <- approxfun(x = hyper_baseline_corr@wavelength, hyper_baseline_corr@data[["spc"]])
+#test approx
+plastic_approx <- plastic_approx_fun(freq_index)
+
+cbind(freq_index, plastic_approx)
+#test savitzky-golay smoother - works like a charm nice and easy
+plastic_approx_smoother <- sgolayfilt(plastic_approx, 3,11)
+
+plot(hyper_baseline_corr@wavelength, hyper_baseline_corr@data[["spc"]], type = "l")+
+lines(freq_index, plastic_approx, col = "red")+lines(freq_index, plastic_approx_smoother, col = "green")
+#Black means its approx poorly  - red is good approximation
+
+unique(ref_lib$poly_lab)
+
+abs_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "ABS")
+
+cor.test(plastic_approx, abs_reference$INTENSITY, method = "pearson")
+
+HDPE_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "HDPE")
+
+cor.test(plastic_approx, HDPE_reference$INTENSITY)
+
+LDPE_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "LDPE")
+
+cor.test(plastic_approx, LDPE_reference$INTENSITY)
+
+plot(freq_index, LDPE_reference$INTENSITY, type = "l")+
+lines(freq_index, plastic_approx, col = "red")
+
+PA_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PA")
+
+cor.test(plastic_approx, PA_reference$INTENSITY, method = "pearson")
+
+plot(freq_index, PA_reference$INTENSITY, type = "l")+
+lines(freq_index, plastic_approx, col = "red")
+
+PC_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PC")
+
+cor.test(plastic_approx, PC_reference$INTENSITY, method = "pearson")
+
+plot(freq_index, PC_reference$INTENSITY, type = "l")+
+lines(freq_index, plastic_approx, col = "red")
+
+PET_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PET")
+
+cor.test(plastic_approx, PET_reference$INTENSITY, method = "pearson")
+
+PLA_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PLA")
+
+cor.test(plastic_approx, PLA_reference$INTENSITY, method = "pearson")
+
+PMMA_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PMMA")
+
+cor.test(plastic_approx, PMMA_reference$INTENSITY, method = "pearson")
+
+Poly_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "Poly")
+
+cor.test(plastic_approx, Poly_reference$INTENSITY, method = "pearson")
+
+POM_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "POM")
+
+cor.test(plastic_approx, POM_reference$INTENSITY, method = "pearson")
+
+PP_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PP")
+
+cor.test(plastic_approx, PP_reference$INTENSITY, method = "pearson")
+
+PS_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PS")
+
+cor.test(plastic_approx, PS_reference$INTENSITY, method = "pearson")
+
+PSA_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PSA")
+
+cor.test(plastic_approx, PSA_reference$INTENSITY, method = "pearson")
+
+PVC_reference <- dplyr::filter(plastic_ref_lib, SAMPLE == "PVC")
+
+cor.test(plastic_approx, PVC_reference$INTENSITY, method = "pearson")
+
+cor(plastic_approx, PVC_reference$INTENSITY, method = "pearson")
+
+plot(freq_index, PVC_reference$INTENSITY, type = "l")+
+lines(freq_index, plastic_approx, col = "red")
+#Same value as cor.test
+
+#This is what they used for their hit index in Choy et al. 2019
+#PVC is the highest correlation by far
+
+#This version is deprecated as it takes all the spectra from that study and not just the plastic reference.
+#poly_labs <- as.character(unique(ref_lib$poly_lab))
+
+poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+
+cor_table <- as.data.frame(matrix(ncol = length(poly_labs), nrow = 1, dimnames = list(NULL, poly_labs)))
+
+#for(name in poly_labs){
+#  temp_filter <- filter(plastic_ref_lib, poly_lab == name)
+#  cor_table[,name] <- cor(plastic_approx, temp_filter$INTENSITY, method = "pearson")
+#That for loop did not work  
+#}
+
+plastic_lab <- data.frame()
+
+for(i in 1:length(poly_labs)){
+  temp_filter <- dplyr::filter(plastic_ref_lib, poly_lab == poly_labs[i])
+  cor_table[,i] <- round(cor(plastic_approx, temp_filter$INTENSITY, method = "pearson"), digits = 3)
+  
+ for (d in 1:nrow(cor_table)){
+  plastic_lab[d,1]<-colnames(cor_table[which.max(cor_table[d,])])
+  
+  }
+}
+
+
+ggtexttable(cor_table, theme = ttheme(base_size = 7.5)) %>% table_cell_bg(row = 2, column = 15, fill = "red")
+
+
+```
+
+```{r importing and looping over plastic wavelegnth files}
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/10_24_19_spectral_data/")
+plastic_test_files <- list.files(path = "/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/10_24_19_spectral_data/", pattern = "*.txt")
+
+file_numbers <- seq(plastic_test_files)
+
+plastic_test_spc_table <- matrix()
+
+freq_index <- seq(780, 1750, by = 1)
+
+all_sample_particle_WV <- as.data.frame(freq_index)
+
+#start of a larger raman data import function need to uncomment for it to work
+
+#Raman_large_import <- function(filepath){
+  #freq_index <- seq(780, 1750, by = 1)
+
+#all_sample_particle_WV <- as.data.frame(freq_index)
+#for loop over .txt files and create a df
+for(filename in plastic_test_files){
+  temp_csv <- read.delim(file = filename, header = F, sep = "\t")
+  colnames(temp_csv) <- c("Wavelength", "Counts")
+  temp_csv_matrix <- as.matrix(temp_csv)
+  approx_test_fun <- approxfun(x = temp_csv_matrix[,'Wavelength'], y = temp_csv_matrix[,'Counts'])
+  new_counts <- approx_test_fun(freq_index)
+  all_sample_particle_WV[filename] <- new_counts
+}
+
+all_sample_particle_WV_t <- t(all_sample_particle_WV)
+
+colnames(all_sample_particle_WV_t) <- all_sample_particle_WV_t[1,]
+
+all_sample_particle_WV_t <- all_sample_particle_WV_t[-1,]
+
+potplastic_filename <- rownames(all_sample_particle_WV_t)
+
+potp_hyper <- as.hyperSpec(all_sample_particle_WV_t, data = data.frame(potplastic_filename))
+
+#This version of as.hyper works and keeps the filenames for each raman spectra
+
+#Baselines
+potp_baselines <-  spc.fit.poly.below(potp_hyper, poly.order = 6)
+#Plotting baseline corrections
+plot(potp_hyper-potp_baselines)
+title(xlab = "Wavelength",ylab = "Arbitrary unit of excitation")
+
+potp_hyper_corrected <- potp_hyper-potp_baselines
+
+#Standard Normal variate normalization
+potp_hyper_corrected@data[["spc"]] <- standardNormalVariate(potp_hyper_corrected@data[["spc"]])
+
+#min-max scaling
+potp_hyper_corrected@data[["spc"]] <- (potp_hyper_corrected@data[["spc"]] - min(potp_hyper_corrected@data[["spc"]])) / (max(potp_hyper_corrected@data[["spc"]])-min(potp_hyper_corrected@data[["spc"]]))
+#}
+
+plot(potp_hyper_corrected, col = rainbow(39),title.args = list(xlab = "Wavelength",ylab = "Arbitrary unit of Intensity"))
+  
+#View(t(all_sample_particle_WV))
+```
+
+This chunk now imports and loops over all .txt files which will correspond to 
+individual particles and transform them into a matrix for proper raman 
+processing. Now I need to make them into a hyperspec obj and do the proper
+standard normal variate, baseline correction, and min-max standardization.
+
+```{r hyperspec object of looped matrix}
+#poly_labs <- as.character(unique(ref_lib$poly_lab))
+
+#poly_labs <- poly_labs[-15]
+#poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+
+poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+
+cor_table_manyplastic <- as.data.frame(matrix(ncol = length(poly_labs), nrow = nrow(potp_hyper_corrected@data[["spc"]]), dimnames = list(NULL, poly_labs)))
+
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(poly_labs)){
+  temp_filter <- dplyr::filter(plastic_ref_lib, poly_lab == poly_labs[i])
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], temp_filter$INTENSITY, method = "pearson"), digits = 3)
+}
+}
+
+plastic_lab <- as.data.frame(matrix(nrow = nrow(cor_table_manyplastic), ncol = 2))
+
+colnames(plastic_lab)  <- c("Hit_Index_Value","Polymer_ID")
+
+rownames(plastic_lab) <- plastic_test_files
+
+for (d in 1:nrow(cor_table_manyplastic)){
+  plastic_lab[d,1]<-cor_table_manyplastic[d,which.max(cor_table_manyplastic[d,])]
+  plastic_lab[d,2]<-colnames(cor_table_manyplastic[which.max(cor_table_manyplastic[d,])])
+  
+  }
+
+plastic_lab_filt <- plastic_lab %>% 
+  rownames_to_column('filename') %>% 
+  dplyr::filter(Hit_Index_Value > 0.22) %>% 
+  column_to_rownames('filename')
+
+plastic_lab_count <- group_by(plastic_lab_filt, Polymer_ID) %>% summarise(n())
+
+plastic_lab_count
+
+ggtexttable(plastic_lab_count)
+
+ggtexttable(plastic_lab_filt)
+#temp_row <- potp_hyper_corrected@data[["spc"]][row,]
+
+#for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  #print(potp_hyper_corrected@data[["spc"]][row,])
+#}
+
+#for(i in 1:length(poly_labs)){
+#  temp_filter <- filter(plastic_ref_lib, poly_lab == poly_labs[i])
+#  return(temp_filter)
+#}
+
+```
+
+```{r 2023 test run, spectral preprossessing}
+#Does this pipeline hold up to with the new spectral data?
+#If so, I need to add in additional reference from openspecy, data which I can download
+#Making notes of each step to make it more readable for future reference
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/6_13_23_Raman_test_runs/")
+#Creates a list of all file names within the desired folder 
+#Each folder with house an entire samples spectral data
+plastic_test_files <- list.files(path = "/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/6_13_23_Raman_test_runs/", pattern = "*.txt")
+#Index values to be looped over
+file_numbers <- seq(plastic_test_files)
+#Blank matrix table to be inserted into an hyperspec object
+plastic_test_spc_table <- matrix()
+#Desired range of spectral data for identification
+#data range collected is much larger, ranging form ~100 - ~2500 wavelength
+freq_index <- seq(780, 1750, by = 1)
+#Empty dataframe from which to add in each spectra
+all_sample_particle_WV <- as.data.frame(freq_index)
+
+#start of a larger raman data import function need to uncomment for it to work
+
+#Raman_large_import <- function(filepath){
+  #freq_index <- seq(780, 1750, by = 1)
+
+#all_sample_particle_WV <- as.data.frame(freq_index)
+
+#for loop over .txt files and create a df of spectra
+#This loops and adds the smoothed version of the spectra within the wavelength ranges desired, which can be changed at any time by changing the "freq_index" object
+for(filename in plastic_test_files){
+  temp_csv <- read.delim(file = filename, header = F, sep = "\t")
+  colnames(temp_csv) <- c("Wavelength", "Counts")
+  temp_csv_matrix <- as.matrix(temp_csv)
+  approx_test_fun <- approxfun(x = temp_csv_matrix[,'Wavelength'], y = temp_csv_matrix[,'Counts'])
+  new_counts <- approx_test_fun(freq_index)
+  all_sample_particle_WV[filename] <- new_counts
+}
+#Matrix is in the wrong format and needs to by transposed to fit the hyperspec obj
+all_sample_particle_WV_t <- t(all_sample_particle_WV)
+#Converting the first column into column names
+colnames(all_sample_particle_WV_t) <- all_sample_particle_WV_t[1,]
+
+all_sample_particle_WV_t <- all_sample_particle_WV_t[-1,]
+#Extracting the filenames or name of specific spectra being analyzed
+potplastic_filename <- rownames(all_sample_particle_WV_t)
+#Making hyperspec obj with matrix of spectra with filename meta data
+potp_hyper <- as.hyperSpec(all_sample_particle_WV_t, data = data.frame(potplastic_filename))
+
+#This version of as.hyper works and keeps the filenames for each raman spectra
+
+#Baseline correction
+potp_baselines <-  spc.fit.poly.below(potp_hyper, poly.order = 6)
+#Plotting baseline corrections
+plot(potp_hyper-potp_baselines)
+title(xlab = "Wavelength",ylab = "Arbitrary unit of excitation")
+
+potp_hyper_corrected <- potp_hyper-potp_baselines
+
+#Standard Normal variate normalization
+potp_hyper_corrected@data[["spc"]] <- standardNormalVariate(potp_hyper_corrected@data[["spc"]])
+
+#min-max scaling
+potp_hyper_corrected@data[["spc"]] <- (potp_hyper_corrected@data[["spc"]] - min(potp_hyper_corrected@data[["spc"]])) / (max(potp_hyper_corrected@data[["spc"]])-min(potp_hyper_corrected@data[["spc"]]))
+#}
+
+plot(potp_hyper_corrected, col = rainbow(39),title.args = list(xlab = "Wavelength",ylab = "Arbitrary unit of Intensity"))
+```
+
+```{r Identification step}
+#Extracting unique names from reference library
+#poly_labs <- as.character(unique(ref_lib$poly_lab))
+#remove the last column (why?)
+#poly_labs <- poly_labs[-15]
+
+#This previous version took all samples from the study and not just the reference plastic. All of the categorized "." were environmental samples thus necessitating removal. I had a filtered df for plastic reference only so use that df for plastic label names.
+
+poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+#Create an correlation matrix to fill that are the dimensions of the plastic reference vs the number of spectra collected within a single sample
+cor_table_manyplastic <- as.data.frame(matrix(ncol = length(poly_labs), nrow = nrow(potp_hyper_corrected@data[["spc"]]), dimnames = list(NULL, poly_labs)))
+#Calculating correlations and filling the DF with the values
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(poly_labs)){
+  temp_filter <- dplyr::filter(plastic_ref_lib, poly_lab == poly_labs[i])
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], temp_filter$INTENSITY, method = "pearson"), digits = 3)
+}
+}
+#Creating an empty df to hold the identified plastic info in
+plastic_lab <- as.data.frame(matrix(nrow = nrow(cor_table_manyplastic), ncol = 2))
+
+colnames(plastic_lab)  <- c("Hit_Index_Value","Polymer_ID")
+
+rownames(plastic_lab) <- plastic_test_files
+#Search the correlation matrix for plastic that are the highest correlated to the spectra with the filename (or really particle name).
+for (d in 1:nrow(cor_table_manyplastic)){
+  plastic_lab[d,1]<-cor_table_manyplastic[d,which.max(cor_table_manyplastic[d,])]
+  plastic_lab[d,2]<-colnames(cor_table_manyplastic[which.max(cor_table_manyplastic[d,])])
+  
+  }
+#Filter spectra that don't meet the spectra limit
+plastic_lab_filt <- plastic_lab %>% 
+  rownames_to_column('filename') %>% 
+  dplyr::filter(Hit_Index_Value > 0.22) %>% 
+  column_to_rownames('filename')
+
+#Summarise the counts for each polymer - But I need to have a way to add to a df with polymers unidentified in the sample but we have references for.
+plastic_lab_count <- group_by(plastic_lab_filt, Polymer_ID) %>% summarise(n())
+
+plastic_lab_count
+
+ggtexttable(plastic_lab_count)
+
+ggtexttable(plastic_lab_filt)
+
+#Its the summarised counts that I need to import into a new df with each sample and 
+```
+
+#Some Notes From OpenSpecy Metadata and SOP
+OpenSpecy uses the same hit indexing as I have used in my Raman pipeline. They do the same baseline removal. My cutoff threshold is slightly lower than their threshold of 0.3, whereas due to degredation I'm using a cutoff (0.22) designated from the 2019 paper I adopted this identification process from. That study used degraded fishing tools as their reference to create the cutoff. OpenSpecy have an R shiny App I could use for identification but I believe since their algorithyms are the same I am going to continue writing my script using the Hyperspec Package and data structure to make downstream analysis a bit easier and allows for greater flexibility with what I can do with the data.
+
+The main issue here is you need to analyze each spectra one at a time. My script allows for analysis for an entire samples hundreds of spectra in a single run of the code.
+
+#State of the script
+I want to make this script have the ability to take in a single spectra for a sample up to thousands of spectra in a single sample and be able to identify each plastic polymer and enumerate them
+##Steps I have done:
+Spectral Preprossessing (smoothing, scaling, baseline correction)
+  Make into a single function
+Spectral Identification (correlations, hit index, selecting highest correlation)
+  Make into a single function - return a df with the identification
+##What is my script missing?
+Data frame with polymer IDs and total for each polymer with additional environmental data
+Create data frame from which I can add to as I collect samples with sample name, depth, size fraction, and all the collected information.
+I need to add to the reference library - the one from OpenSpecy with thousands of different polymer reference spectra
+I want to see if I can make the plots with ggplot and a hyperspec object...think I can by extracting the SPC data from the "HS" obj
+I want to see if I can apply the same smoothing function as openspecy does as I am using their reference database...Its not necessary as it makes almost no difference in the estimated coefficients and the approxfun cleans it up enough, although may make some correlations lower than they otherwise would be.
+
+There are some important peaks being missed by not including the 500 nm wavelegnth range. I will change the range of the smoothing process from 750 to 500 and change the upper range to 1900 - 2000 nm.
+
+```{r Try to import OpenSpecy library, eval = FALSE}
+#If I can import OpenSpecy library and get the same values as they do I will be happy to move onto the next step.
+open_spec_reflib <- read.csv("/Users/christophercarnivale/Desktop/Dissertation_data/Microplastic_antarctica/raman_library.csv")
+
+open_spec_reflib_metadata <- read.csv("/Users/christophercarnivale/Desktop/Dissertation_data/Microplastic_antarctica/raman_metadata.csv")
+
+#Need to merge libraries and add information to the metadata csv file for my use
+
+#First change the df to fit that I'm merging
+plastic_ref_lib_for_merge <- select(plastic_ref_lib, WAVE, INTENSITY, poly_lab)
+
+plastic_ref_lib_for_merge['sample_name'] <- 1
+
+for(i in seq_along(poly_labs)){
+  plastic_ref_lib_for_merge[which(plastic_ref_lib_for_merge$poly_lab == poly_labs[i]),]['sample_name'] <- rep(seq(623, 623+length(poly_labs), by = 1)[i], nrow(plastic_ref_lib_for_merge[which(plastic_ref_lib_for_merge$poly_lab == poly_labs[i]),]))
+} 
+
+plastic_ref_lib_for_merge <- select(plastic_ref_lib_for_merge, WAVE, INTENSITY, sample_name, poly_lab) 
+colnames(plastic_ref_lib_for_merge) <- colnames(open_spec_reflib)#This now makes the libraries compatible for merger
+#Create a single hyperspec object with all of the reference spectra in the "spc" portion of the data.
+
+#Vector of values on with to index the reference library dataframe. I dont need to create a hyperspec object UNLESS I need to change the values of the reference library.
+OS_plastic_id_name <- unique(open_spec_reflib$sample_name)
+
+#I don't think I need to create a hyperspec object I just need to convert the library to a form in which can be used in a cor analysis. Cor() needs the same number of observations for both inputs for the comparison.
+#This essentially means I need to convert the raw library spectra with the same smoothing and approx patterns. I should finish applying the smoothing function into the script and then apply it to the library.
+
+#This doesn't work as there are too many spectra with similar spectrum identity names
+test_id_name <- unique(open_spec_reflib_metadata$spectrum_identity)
+
+#Create an correlation matrix to fill that are the dimensions of the plastic reference vs the number of spectra collected within a single sample
+cor_table_manyplastic <- as.data.frame(matrix(ncol = length(OS_plastic_id_name), nrow = nrow(potp_hyper_corrected@data[["spc"]]), dimnames = list(NULL, OS_plastic_id_name)))
+#Calculating correlations and filling the DF with the values
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(OS_plastic_id_name)){
+  temp_filter <- dplyr::filter(open_spec_reflib, OS_plastic_id_name == OS_plastic_id_name[i])
+  #This is the step where I subset the reference into the same form as the imported data processed prior
+  #Now I need to process the original spectra in the same manner that I have 
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], temp_filter$INTENSITY, method = "pearson"), digits = 3)
+}
+}
+
+#head(open_spec_reflib_metadata)
+#head(open_spec_reflib)
+#head(plastic_ref_lib_for_merge)
+#str(open_spec_reflib)
+
+#MERGING libraries here...
+Merge_test <- rbind(plastic_ref_lib_for_merge, open_spec_reflib)
+#This works
+#Now I have a df from which I can parse out and use for plasic identification
+
+```
+
+```{r oil immersion test data plot, eval = FALSE}
+#Does this pipeline hold up to with the new spectral data?
+#If so, I need to add in additional reference from openspecy, data which I can download
+#Making notes of each step to make it more readable for future reference
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/Test_6_28_23/St_3/Less_20/")
+#Creates a list of all file names within the desired folder 
+#Each folder with house an entire samples spectral data
+plastic_test_files <- list.files(path = "/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/Test_6_28_23/St_3/Less_20/", pattern = "*.txt")
+#Index values to be looped over
+file_numbers <- seq(plastic_test_files)
+#Blank matrix table to be inserted into an hyperspec object
+plastic_test_spc_table <- matrix()
+#Desired range of spectral data for identification
+#data range collected is much larger, ranging form ~100 - ~2500 wavelength
+freq_index <- seq(500, 1750, by = 0.1)
+#Empty dataframe from which to add in each spectra
+all_sample_particle_WV <- as.data.frame(freq_index)
+
+#start of a larger raman data import function need to uncomment for it to work
+
+#Raman_large_import <- function(filepath){
+  #freq_index <- seq(780, 1750, by = 1)
+
+#all_sample_particle_WV <- as.data.frame(freq_index)
+
+#for loop over .txt files and create a df of spectra
+#This loops and adds the smoothed version of the spectra within the wavelength ranges desired, which can be changed at any time by changing the "freq_index" object
+for(filename in plastic_test_files){
+  temp_csv <- read.delim(file = filename, header = F, sep = "\t")
+  colnames(temp_csv) <- c("Wavelength", "Counts")
+  temp_csv_matrix <- as.matrix(temp_csv)
+  approx_test_fun <- approxfun(x = temp_csv_matrix[,'Wavelength'], y = temp_csv_matrix[,'Counts'], rule = 2)
+  new_counts <- approx_test_fun(freq_index)
+  new_counts_smoother <- sgolayfilt(new_counts, 3,11, m = 1)
+  all_sample_particle_WV[filename] <- new_counts_smoother
+}
+#Matrix is in the wrong format and needs to by transposed to fit the hyperspec obj
+all_sample_particle_WV_t <- t(all_sample_particle_WV)
+#Converting the first row into column names
+colnames(all_sample_particle_WV_t) <- all_sample_particle_WV_t[1,]
+
+all_sample_particle_WV_t <- all_sample_particle_WV_t[-1,]
+#Extracting the filenames or name of specific spectra being analyzed
+potplastic_filename <- rownames(all_sample_particle_WV_t)
+#Making hyperspec obj with matrix of spectra with filename meta data
+potp_hyper <- as.hyperSpec(all_sample_particle_WV_t, data = data.frame(potplastic_filename))
+
+#This version of as.hyper works and keeps the filenames for each raman spectra
+
+#Baseline correction
+potp_baselines <-  spc.fit.poly.below(potp_hyper, poly.order = 6)
+#Plotting baseline corrections
+plot(potp_hyper-potp_baselines)
+title(xlab = "Wavelength",ylab = "Arbitrary unit of excitation")
+
+potp_hyper_corrected <- potp_hyper-potp_baselines
+
+#Standard Normal variate normalization
+potp_hyper_corrected@data[["spc"]] <- standardNormalVariate(potp_hyper_corrected@data[["spc"]])
+
+#min-max scaling
+potp_hyper_corrected@data[["spc"]] <- (potp_hyper_corrected@data[["spc"]] - min(potp_hyper_corrected@data[["spc"]])) / (max(potp_hyper_corrected@data[["spc"]])-min(potp_hyper_corrected@data[["spc"]]))
+#}
+
+plot(potp_hyper_corrected, col = rainbow(39),title.args = list(xlab = "Wavelength",ylab = "Arbitrary unit of Intensity"))+legend(500, 1, legend = potplastic_filename,col = rainbow(39))
+plot(potp_hyper_corrected)
+#Implemented the new smoothing algorithm...now I need to implement this identification with the new library and how that works.
+
+#Extracting unique names from reference library
+#poly_labs <- as.character(unique(ref_lib$poly_lab))
+#remove the last column (why?)
+#poly_labs <- poly_labs[-15]
+
+#This previous version took all samples from the study and not just the reference platic. All of the categorized "." were environmental samples thus necessitating removal. I had a filtered df for plastic reference only so use that df for plastic label names.
+
+poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+#Create an correlation matrix to fill that are the dimensions of the plastic reference vs the number of spectra collected within a single sample
+cor_table_manyplastic <- as.data.frame(matrix(ncol = length(poly_labs), nrow = nrow(potp_hyper_corrected@data[["spc"]]), dimnames = list(NULL, poly_labs)))
+#Calculating correlations and filling the DF with the values
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(poly_labs)){
+  temp_filter <- dplyr::filter(plastic_ref_lib, poly_lab == poly_labs[i])
+  temp_approx <- approxfun()
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], temp_filter$INTENSITY, method = "pearson"), digits = 3)
+}
+}
+#Creating an empty df to hold the identified plastic info in
+plastic_lab <- as.data.frame(matrix(nrow = nrow(cor_table_manyplastic), ncol = 2))
+
+colnames(plastic_lab)  <- c("Hit_Index_Value","Polymer_ID")
+
+rownames(plastic_lab) <- plastic_test_files
+#Search the correlation matrix for plastic that are the highest correlated to the spectra with the filename (or really particle name).
+for (d in 1:nrow(cor_table_manyplastic)){
+  plastic_lab[d,1]<-cor_table_manyplastic[d,which.max(cor_table_manyplastic[d,])]
+  plastic_lab[d,2]<-colnames(cor_table_manyplastic[which.max(cor_table_manyplastic[d,])])
+  
+  }
+#Filter spectra that don't meet the spectra limit
+plastic_lab_filt <- plastic_lab %>% 
+  rownames_to_column('filename') %>% 
+  dplyr::filter(Hit_Index_Value > 0.22) %>% 
+  column_to_rownames('filename')
+
+#Summarise the counts for each polymer - But I need to have a way to add to a df with polymers unidentified in the sample but we have references for.
+plastic_lab_count <- group_by(plastic_lab_filt, Polymer_ID) %>% summarise(n())
+
+plastic_lab_count
+
+ggtexttable(plastic_lab_count)
+
+ggtexttable(plastic_lab_filt)
+```
+
+```{r Stn R less 20 test df, eval = FALSE}
+#Does this pipeline hold up to with the new spectral data?
+#If so, I need to add in additional reference from openspecy, data which I can download
+#Making notes of each step to make it more readable for future reference
+setwd("/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/7_06_23/Stn_R/Surface/less_20/")
+#Creates a list of all file names within the desired folder 
+#Each folder with house an entire samples spectral data
+plastic_test_files <- list.files(path = "/Users/christophercarnivale/Desktop/Dissertation_data/Raman Spectral Data copy/Antarctic_Microplastic_Raman_Spectra/7_06_23/Stn_R/Surface/less_20/", pattern = "*.txt")
+#Index values to be looped over
+file_numbers <- seq(plastic_test_files)
+#Blank matrix table to be inserted into an hyperspec object
+plastic_test_spc_table <- matrix()
+#Desired range of spectral data for identification
+#data range collected is much larger, ranging form ~100 - ~2500 wavelength
+#This frequency index is for the inclusion of the oringinal library I can extend the range when I remove the use of the original library by calling the open_spec_ref_lib df instead of the merge test
+freq_index <- seq(780, 1750, by = 0.1)
+#Empty dataframe from which to add in each spectra
+all_sample_particle_WV <- as.data.frame(freq_index)
+
+#start of a larger raman data import function need to uncomment for it to work
+
+#Raman_large_import <- function(filepath){
+  #freq_index <- seq(780, 1750, by = 1)
+
+#all_sample_particle_WV <- as.data.frame(freq_index)
+
+#for loop over .txt files and create a df of spectra
+#This loops and adds the smoothed version of the spectra within the wavelength ranges desired, which can be changed at any time by changing the "freq_index" object
+for(filename in plastic_test_files){
+  temp_csv <- read.delim(file = filename, header = F, sep = "\t")
+  colnames(temp_csv) <- c("Wavelength", "Counts")
+  temp_csv_matrix <- as.matrix(temp_csv)
+  approx_test_fun <- approxfun(x = temp_csv_matrix[,'Wavelength'], y = temp_csv_matrix[,'Counts'], rule = 2)
+  new_counts <- approx_test_fun(freq_index)
+  new_counts_smoother <- sgolayfilt(new_counts, 3,11)
+  all_sample_particle_WV[filename] <- new_counts_smoother
+}
+#Matrix is in the wrong format and needs to by transposed to fit the hyperspec obj
+all_sample_particle_WV_t <- t(all_sample_particle_WV)
+#Converting the first column into column names
+colnames(all_sample_particle_WV_t) <- all_sample_particle_WV_t[1,]
+
+all_sample_particle_WV_t <- all_sample_particle_WV_t[-1,]
+#Extracting the filenames or name of specific spectra being analyzed
+potplastic_filename <- rownames(all_sample_particle_WV_t)
+#Making hyperspec obj with matrix of spectra with filename meta data
+potp_hyper <- as.hyperSpec(all_sample_particle_WV_t, data = data.frame(potplastic_filename))
+
+#This version of as.hyper works and keeps the filenames for each raman spectra
+
+#Baseline correction
+potp_baselines <-  spc.fit.poly.below(potp_hyper, poly.order = 6)
+#Plotting baseline corrections
+plot(potp_hyper-potp_baselines)
+title(xlab = "Wavelength",ylab = "Arbitrary unit of excitation")
+
+potp_hyper_corrected <- potp_hyper-potp_baselines
+
+#Standard Normal variate normalization
+potp_hyper_corrected@data[["spc"]] <- standardNormalVariate(potp_hyper_corrected@data[["spc"]])
+
+#min-max scaling
+potp_hyper_corrected@data[["spc"]] <- (potp_hyper_corrected@data[["spc"]] - min(potp_hyper_corrected@data[["spc"]])) / (max(potp_hyper_corrected@data[["spc"]])-min(potp_hyper_corrected@data[["spc"]]))
+
+
+plot(potp_hyper_corrected, col = rainbow(40),title.args = list(xlab = "Wavelength",ylab = "Arbitrary unit of Intensity"))
+plot(potp_hyper_corrected)
+#Implemented the new smoothing algorithm...now I need to implement this identification with the new library and how that works.
+
+#Extracting unique names from reference library
+#poly_labs <- as.character(unique(ref_lib$poly_lab))
+#remove the last column (why?)
+#poly_labs <- poly_labs[-15]
+
+#This previous version took all samples from the study and not just the reference platic. All of the categorized "." were environmental samples thus necessitating removal. I had a filtered df for plastic reference only so use that df for plastic label names.
+
+poly_labs <-as.character(unique(plastic_ref_lib$poly_lab))
+#Create an correlation matrix to fill that are the dimensions of the plastic reference vs the number of spectra collected within a single sample
+cor_table_manyplastic <- as.data.frame(matrix(ncol = length(OS_plastic_id_name), nrow = nrow(potp_hyper_corrected@data[["spc"]]), dimnames = list(NULL, OS_plastic_id_name)))
+#Calculating correlations and filling the DF with the values
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(OS_plastic_id_name)){
+  temp_filter <- dplyr::filter(Merge_test, sample_name == OS_plastic_id_name[i])
+  approx_test_fun <- approxfun(x = temp_filter[,'wavenumber'], y = temp_filter[,'intensity'], rule = 2)
+  new_counts <- approx_test_fun(freq_index)
+  #This frequency index is for the inclusion of the oringinal library I can extend the range when I remove the use of the original library by calling the open_spec_ref_lib df instead of the merge test
+  new_counts_smoother <- sgolayfilt(new_counts, 3,11)
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], new_counts_smoother, method = "pearson"), digits = 3)
+}
+}
+
+#Debugging... the previous code works for only a small subset of the library. Most of the library fills with NAs
+for(row in 1:nrow(potp_hyper_corrected@data[["spc"]])){
+  for(i in seq_along(OS_plastic_id_name)){
+  temp_filter <- dplyr::filter(Merge_test, sample_name == OS_plastic_id_name[i])
+  print(temp_filter)
+  approx_test_fun <- approxfun(x = temp_filter[,'wavenumber'], y = temp_filter[,'intensity'], rule = 2)
+  new_counts <- approx_test_fun(freq_index)
+  #This frequency index is for the inclusion of the oringinal library I can extend the range when I remove the use of the original library by calling the open_spec_ref_lib df instead of the merge test
+  new_counts_smoother <- sgolayfilt(new_counts, 3,11)
+  cor_table_manyplastic[row,i] <- round(cor(potp_hyper_corrected@data[["spc"]][row,], new_counts_smoother, method = "pearson"), digits = 3)
+}
+}
+#Creating an empty df to hold the identified plastic info in
+plastic_lab <- as.data.frame(matrix(nrow = nrow(cor_table_manyplastic), ncol = 2))
+
+colnames(plastic_lab)  <- c("Hit_Index_Value","Polymer_ID")
+
+rownames(plastic_lab) <- plastic_test_files
+#Search the correlation matrix for plastic that are the highest correlated to the spectra with the filename (or really particle name).
+for (d in 1:nrow(cor_table_manyplastic)){
+  plastic_lab[d,1]<-cor_table_manyplastic[d,which.max(cor_table_manyplastic[d,])]
+  plastic_lab[d,2]<-colnames(cor_table_manyplastic[which.max(cor_table_manyplastic[d,])])
+  
+  }
+#Filter spectra that don't meet the spectra limit
+plastic_lab_filt <- plastic_lab %>% 
+  rownames_to_column('filename') %>% 
+  dplyr::filter(Hit_Index_Value > 0.2) %>% 
+  column_to_rownames('filename')
+
+#Summarise the counts for each polymer - But I need to have a way to add to a df with polymers unidentified in the sample but we have references for.
+plastic_lab_count <- group_by(plastic_lab_filt, Polymer_ID) %>% summarise(n())
+
+plastic_lab_count
+
+ggtexttable(plastic_lab_count)
+
+ggtexttable(plastic_lab_filt)
+
+write.csv(plastic_lab_filt, file = "/Users/christophercarnivale/Desktop/Dissertation_data/Microplastic_antarctica/all_plastic_correlations_indexMIN.csv")
+
+write.csv(plastic_lab_count, file = "/Users/christophercarnivale/Desktop/Dissertation_data/Microplastic_antarctica/filtered_plastic_correlations_indexMIN.csv")
+```
+
+```{r check to read RDS file }
+derivative_ref_lib <- readRDS("derivative.rds")
+
+derivative_ref_lib[["spectra"]][1:5,1:5]
+```
+

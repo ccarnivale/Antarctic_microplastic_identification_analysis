@@ -1,0 +1,66 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+blank <- read.csv("blank_filter_paper.CSV")
+
+blank$Sample <- "control"
+
+poly_only <- read.csv("plain_microplastic.CSV")
+
+poly_only$Sample <-  "Polystyrene Only"
+
+con_8 <- read.csv("test 8_1.CSV")
+
+con_8$Sample <- "Concentration of 10^8 per ml"
+
+con_neg1 <- read.csv("test neg1.CSV")
+
+con_neg1$Sample <- "Concentration of 10^-1 per ml"
+
+test_bind <- rbind(blank, poly_only, con_8, con_neg1)
+
+test_bind1 <- rename(test_bind, "Wavenumber" = "Wavenumber..cm..1.")
+
+test_bind2 <- test_bind1[order(test_bind1$Sample,-test_bind1$Wavenumber), ]
+
+test_bind3 <- group_by(test_bind2, Sample)
+
+zoom <- filter(test_bind1, Wavenumber < 3000 & Wavenumber >2700)
+zoom1 <- filter(test_bind2, Wavenumber < 1700 & Wavenumber >1300)
+
+a <- ggplot(test_bind2)+
+  geom_path(aes(x = Wavenumber, y = Absorbance, color = Sample))+scale_x_reverse()+theme(legend.position = "none")
+a
+b <- ggplot(zoom1)+
+  geom_path(aes(x = Wavenumber, y = Absorbance, color = Sample))+scale_x_reverse()+ theme(legend.position = "right")
+
+b
+c <- ggplotGrob(b+ theme(plot.background = element_rect(color = "black")))
+e <- ggplotGrob(a+ theme(plot.background = element_rect(color = "black")))
+a+annotation_custom(
+  grob = c,
+  xmin = 1300,
+  xmax = 1700,
+  ymin = 0,
+  ymax = 0.6
+)
+
+ggplot(zoom1)+
+  geom_line(aes(x = Wavenumber, y = Absorbance, color = Sample))+xlim(1000,2000)
+
+
+
+d <- ggdraw() + plot_grid(a,b, ncol = 2, labels = "AUTO")
+d
+
+grid.arrange(a,b, ncol = 1)
+
+```
+
+
+
